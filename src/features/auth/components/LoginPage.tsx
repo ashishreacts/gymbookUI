@@ -1,11 +1,10 @@
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Box, Button, TextField, Typography } from "@mui/material";
-import { useQuery } from "@tanstack/react-query";
 import React from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import * as yup from "yup";
-import { LoginRequestDTO, loginWithEmailAndPassword } from "../api/login";
+import { useLoginData } from "../api/login";
 const schema: yup.ObjectSchema<LoginData> = yup.object().shape({
   email: yup.string().email("Invalid email").required("Email is required"),
   password: yup
@@ -30,20 +29,10 @@ export const LoginPage: React.FC<LoginFormProps> = ({ onSuccess }) => {
     resolver: yupResolver(schema),
   });
 
-  const loginData: LoginRequestDTO = {
-    email: "example@example.com",
-    password: "password123",
-  };
+  const createLoginPage = useLoginData();
 
-  const { data } = useQuery({
-    queryKey: ["login"],
-    queryFn: () => loginWithEmailAndPassword(loginData),
-  });
-
-  if (!data) {
-    return <div />;
-  }
-  const onSubmit: SubmitHandler<LoginData> = async () => {
+  const onSubmit: SubmitHandler<LoginData> = async (loginData: LoginData) => {
+    await createLoginPage.mutateAsync({ loginData });
     onSuccess();
   };
   return (
